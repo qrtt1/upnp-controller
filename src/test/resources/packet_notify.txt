@@ -1,0 +1,8 @@
+NOTIFY * HTTP/1.1
+Host: 239.255.255.250:1900
+Cache-Control: max-age=1800
+Location: http://192.168.0.125:60968/RootDevice0x8447f88.xml
+Server: Linux/2.6.33-ARCH UPnP/1.0 GUPnP/0.13.3
+NTS: ssdp:alive
+NT: urn:schemas-upnp-org:service:Dimming:1
+USN: uuid:92ca7ddb-e9ea-4ef5-9ca2-c26b1e3b4337::urn:schemas-upnp-org:service:Dimming:1
