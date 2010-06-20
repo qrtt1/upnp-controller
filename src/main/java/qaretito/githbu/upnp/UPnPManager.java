@@ -75,8 +75,13 @@ public class UPnPManager {
             setIdentify(node.find("serviceType").get(0).getText());
             String data = null;
             try {
-                data = HttpUtils.getData(httpServer + "/"
-                        + node.find("SCPDURL").get(0).getText());
+                
+                String scpdUrl = node.find("SCPDURL").get(0).getText();
+                if (!scpdUrl.startsWith("http")) {
+                    scpdUrl = httpServer + "/" + scpdUrl;
+                }
+                logger.info("SCPDURL: " + scpdUrl);
+                data = HttpUtils.getData(scpdUrl);
                 serviceSpecXml = XmlTree.makeTree(data);
                 controlUrl = httpServer + ""
                         + node.find("controlURL").get(0).getText();
@@ -99,8 +104,7 @@ public class UPnPManager {
                     + "<s:Body><u:%{Service} xmlns:u=\"%{ServiceType}\">%{Arguments}</u:%{Service}></s:Body></s:Envelope>"
                     .replaceAll("%\\{ServiceType\\}", serviceType)
                     .replaceAll("%\\{Arguments\\}", arguments)
-                    .replaceAll("%\\{Service\\}", service)
-                    ;
+                    .replaceAll("%\\{Service\\}", service);
         }
 
         public Map<String, String> prepareInvokeData(String action, Map<String, String> args) throws UPnPException {
@@ -172,14 +176,16 @@ public class UPnPManager {
             throws Exception {
 
         INode root = XmlTree.makeTree(rootDeviceDescription);
-        for (INode serviceNode : root.find("service")) {
-            try {
-                Service service = new Service(serviceNode, httpServer);
-                if (!models.containsValue(service)) {
-                    models.put(service.getIdentify(), service);
+        for (INode deviceNode : root.find("device")) {
+            for (INode serviceNode : deviceNode.find("service")) {
+                try {
+                    Service service = new Service(serviceNode, httpServer);
+                    if (!models.containsValue(service)) {
+                        models.put(service.getIdentify(), service);
+                    }
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
                 }
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
             }
         }
 
@@ -193,7 +199,6 @@ public class UPnPManager {
                     logger.info("found: " + serviceInstance.getIdentify());
                     try {
                         Map<String, String> request = serviceInstance.prepareInvokeData(action, args);
-                        request.put("HOST", "127.0.0.1:123456");
                         final String body = request.remove("body");
                         Object result = HttpUtils.post(serviceInstance.getControlUrl(), request, body);
                         logger.info("result:" + result);
