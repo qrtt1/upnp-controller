@@ -1,0 +1,14 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.apache.httpcomponents:httpclient:4.0'
+    compile 'net.jcip:jcip-annotations:1.0'
+    compile 'commons-logging:commons-logging:1.1.1'
+    testCompile 'junit:junit:4.+'
+}
